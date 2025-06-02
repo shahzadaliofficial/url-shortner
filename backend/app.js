@@ -15,8 +15,16 @@ dotenv.config('./.env')
 
 
 const app =express();
+app.set('case sensitive routing', true);
 app.use(cors({
-    origin: 'http://localhost:5173', // your React app
+    origin: [
+        'http://localhost:5173', 
+        'http://localhost:5174', 
+        'http://localhost:5175', 
+        'http://localhost:5176',
+        process.env.FRONTEND_URL, // Add production frontend URL
+        /\.vercel\.app$/ // Allow all Vercel apps for flexibility
+    ].filter(Boolean), // Remove undefined values
     credentials: true // 👈 this allows cookies to be sent
 }));
 

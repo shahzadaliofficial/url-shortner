@@ -1,6 +1,12 @@
 import axios, { isAxiosError } from "axios";
 
-const axiosInstance = axios.create({baseURL: "http://localhost:3000/"})
+// Use environment variable for API URL, fallback to localhost for development
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+const axiosInstance = axios.create({
+    baseURL: API_URL,
+    withCredentials: true // Enable sending cookies
+})
 
 
 //Response Interceptor
