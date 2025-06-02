@@ -9,7 +9,7 @@ router.post('/login', userLogin)
 router.post('/logout', userLogout)
 router.post('/verify-email', verifyEmail)
 router.post('/resend-verification', resendVerification)
-router.post('/me', authMiddleware, getCurrentuser)
+router.get('/me', authMiddleware, getCurrentuser)
 
 
 export default router

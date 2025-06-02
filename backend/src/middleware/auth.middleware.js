@@ -7,30 +7,39 @@ export const authMiddleware = async (req, res, next) => {
         const token = req.cookies.accessToken;
         
         if (!token) {
-            throw new UnauthorizedError("No token provided");
+            return res.status(401).json({
+                success: false,
+                message: "No token provided"
+            });
         }
 
         const decoded = verifyJwtToken(token);
         
         if (!decoded) {
-            throw new UnauthorizedError("Invalid token");
+            return res.status(401).json({
+                success: false,
+                message: "Invalid token"
+            });
         }
 
         const user = await findUserById(decoded.id);
         
         if (!user) {
-            throw new UnauthorizedError("User not found");
+            return res.status(401).json({
+                success: false,
+                message: "User not found"
+            });
         }
 
         // Add user to request object
         req.user = user;
         next();
     } catch (error) {
-        // If it's already an UnauthorizedError, pass it through
-        if (error instanceof UnauthorizedError) {
-            throw error;
-        }
-        // For other errors (JWT verification, etc), throw a new UnauthorizedError
-        throw new UnauthorizedError("Authentication failed");
+        console.error('Auth middleware error:', error);
+        return res.status(401).json({
+            success: false,
+            message: "Authentication failed",
+            error: error.message
+        });
     }
 };

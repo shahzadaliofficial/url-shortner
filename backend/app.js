@@ -10,6 +10,7 @@ import { errorHandler } from './src/utils/errorHandler.js';
 import cors from 'cors'
 import { attachUser } from "./src/utils/attachUser.js";
 import cookieParser from "cookie-parser"
+import { ensureDbConnection } from './src/middleware/database.middleware.js';
 
 dotenv.config()
 
@@ -40,6 +41,9 @@ app.use(cookieParser())
 
 
 app.use(attachUser)
+
+// Ensure database connection for all API routes
+app.use('/api', ensureDbConnection);
 
 // Debug endpoint to test MongoDB connection
 app.get('/debug/db', async (req, res) => {
@@ -73,13 +77,157 @@ app.use("/api/create",shortUrlRouter)
 
 //Auth
 app.use("/api/auth",authRouter)
+
+// Favicon route - return 204 No Content
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
+
+app.get('/favicon.png', (req, res) => {
+  res.status(204).end();
+});
+
+// Root route - 404 page with redirect to frontend
+app.get('/', (req, res) => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  
+  res.status(404).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>404 - API Server</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+            }
+            .container {
+                text-align: center;
+                padding: 2rem;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                max-width: 500px;
+                width: 90%;
+            }
+            .error-code {
+                font-size: 6rem;
+                font-weight: bold;
+                margin-bottom: 1rem;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            .error-message {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+                opacity: 0.9;
+            }
+            .description {
+                font-size: 1rem;
+                margin-bottom: 2rem;
+                opacity: 0.8;
+                line-height: 1.6;
+            }
+            .redirect-btn {
+                display: inline-block;
+                padding: 12px 24px;
+                background: #4CAF50;
+                color: white;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: bold;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            }
+            .redirect-btn:hover {
+                background: #45a049;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            }
+            .api-info {
+                margin-top: 2rem;
+                padding: 1rem;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
+                font-size: 0.9rem;
+                opacity: 0.7;
+            }
+            .countdown {
+                margin-top: 1rem;
+                font-size: 0.9rem;
+                opacity: 0.8;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="error-code">404</div>
+            <div class="error-message">API Server</div>
+            <div class="description">
+                This is the backend API server for the URL Shortener application.<br>
+                You've reached the wrong place! 🤔
+            </div>
+            <a href="${frontendUrl}" class="redirect-btn">Go to URL Shortener App</a>
+            <div class="countdown" id="countdown">
+                Redirecting automatically in <span id="timer">10</span> seconds...
+            </div>
+            <div class="api-info">
+                <strong>For developers:</strong><br>
+                API endpoints are available at /api/*<br>
+                Documentation: <a href="/api/docs" style="color: #87CEEB;">API Docs</a>
+            </div>
+        </div>
+
+        <script>
+            let timeLeft = 10;
+            const timer = document.getElementById('timer');
+            const countdown = document.getElementById('countdown');
+            
+            const countdownInterval = setInterval(() => {
+                timeLeft--;
+                timer.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    countdown.textContent = 'Redirecting now...';
+                    window.location.href = '${frontendUrl}';
+                }
+            }, 1000);
+            
+            // Immediate redirect on button click
+            document.querySelector('.redirect-btn').addEventListener('click', () => {
+                clearInterval(countdownInterval);
+            });
+        </script>
+    </body>
+    </html>
+  `);
+});
+
 //GET: Redirection
 app.get('/:id', shortUrlRedirect)
 
 //Error Handler
 app.use(errorHandler)
 
-app.listen(3000, () => {
-  connectDB()
+app.listen(3000, async () => {
   console.log('Server is running on port 3000');
+  try {
+    await connectDB();
+    console.log('Database connection established');
+  } catch (error) {
+    console.error('Failed to connect to database:', error.message);
+  }
 })

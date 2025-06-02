@@ -22,14 +22,33 @@ export const shortUrlCreate=tryCatchWrapAsync(async(req, res)=>{
       res.status(200).json({url: process.env.APP_URI+shortUrl})
       })
 
-export const shortUrlRedirect = tryCatchWrapAsync(async (req,res)=>{
-  const {id} = req.params;
-  console.log(id)
-  const url= await getUrl(id) 
-  if (url){
-    res.redirect(url.full_url)
-  }else{
-    throw new NotFoundError("Invalid Short UrL")
+export const shortUrlRedirect = tryCatchWrapAsync(async (req, res) => {
+  const { id } = req.params;
+  
+  // Validate the ID format
+  if (!id || id.length < 3) {
+    throw new NotFoundError("Invalid Short URL");
+  }
+  
+  // Skip favicon and common static files
+  if (id.includes('favicon') || id.includes('.')) {
+    throw new NotFoundError("Invalid Short URL");
+  }
+  
+  console.log('Redirecting ID:', id);
+  
+  try {
+    const url = await getUrl(id);
+    
+    if (url && url.full_url) {
+      console.log('Redirecting to:', url.full_url);
+      res.redirect(url.full_url);
+    } else {
+      throw new NotFoundError("Invalid Short URL");
+    }
+  } catch (error) {
+    console.error('Redirect error:', error);
+    throw new NotFoundError("Invalid Short URL");
   }
 }) 
 export const customShortUrlCreate=tryCatchWrapAsync(async(req, res)=>{

@@ -24,7 +24,7 @@ export const logoutUser = () => {
 
 // Get current user
 export const getCurrentUser = () => {
-  return axiosInstance.post('/api/auth/me')
+  return axiosInstance.get('/api/auth/me')
 }
 
 // Verify email
@@ -43,5 +43,5 @@ export const resendVerification = (email) => {
 
 // Get user's URLs
 export const getUserUrls = () => {
-  return axiosInstance.post('/api/user/urls')
+  return axiosInstance.get('/api/user/urls')
 }
