@@ -11,8 +11,14 @@ import cors from 'cors'
 import { attachUser } from "./src/utils/attachUser.js";
 import cookieParser from "cookie-parser"
 
-dotenv.config('./.env')
+dotenv.config()
 
+// Debug environment variables
+console.log('=== Environment Check ===')
+console.log('MONGO_URI:', process.env.MONGO_URI ? 'LOADED' : 'MISSING')
+console.log('NODE_ENV:', process.env.NODE_ENV)
+console.log('FRONTEND_URL:', process.env.FRONTEND_URL ? 'LOADED' : 'MISSING')
+console.log('========================')
 
 const app =express();
 app.set('case sensitive routing', true);
@@ -34,6 +40,31 @@ app.use(cookieParser())
 
 
 app.use(attachUser)
+
+// Debug endpoint to test MongoDB connection
+app.get('/debug/db', async (req, res) => {
+  try {
+    const mongoose = await import('mongoose');
+    if (mongoose.default.connection.readyState === 1) {
+      res.json({ 
+        status: 'success', 
+        message: 'Database connected successfully',
+        readyState: mongoose.default.connection.readyState 
+      });
+    } else {
+      res.status(500).json({ 
+        status: 'error', 
+        message: 'Database not connected',
+        readyState: mongoose.default.connection.readyState 
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error', 
+      message: error.message 
+    });
+  }
+});
 
 app.use("/api/user", userRouter)
 
