@@ -13,7 +13,7 @@ const UrlShortnerForm = () => {
   
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
-  const baseUrl = import.meta.env.VITE_FRONTEND_URL || "http://localhost:3000"
+  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000"
   const domain = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/'
 
   const handleSubmit = async (e) => {

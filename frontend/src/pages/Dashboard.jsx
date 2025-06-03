@@ -8,7 +8,9 @@ import LoadingSpinner from '../components/LoadingSpinner'
 const Dashboard = () => {
   const { user, isAuthenticated, logout } = useAuth()
   const navigate = useNavigate()
-  const baseUrl = import.meta.env.VITE_FRONTEND_URL || "http://localhost:3000"
+  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000"
+  // Ensure URL doesn't end with slash for display purposes
+  const displayUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
   const [urls, setUrls] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -204,7 +206,7 @@ const Dashboard = () => {
                   </label>
                   <div className="mt-1 flex rounded-md shadow-sm">
                     <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                      {baseUrl}/
+                      {displayUrl}/
                     </span>
                     <input
                       type="text"
@@ -301,7 +303,7 @@ const Dashboard = () => {
                         <div className="flex items-center space-x-3">
                           <div className="flex-1">
                             <p className="text-sm font-medium text-blue-600 truncate">
-                              {baseUrl}/{url.short_url}
+                              {displayUrl}/{url.short_url}
                             </p>
                             <p className="text-sm text-gray-500 truncate">
                               {url.full_url}
@@ -320,7 +322,7 @@ const Dashboard = () => {
                           </p>
                         </div>
                         <button
-                          onClick={() => navigator.clipboard.writeText(`${baseUrl}/${url.short_url}`)}
+                          onClick={() => navigator.clipboard.writeText(`${displayUrl}/${url.short_url}`)}
                           className="text-blue-600 hover:text-blue-500 text-sm font-medium"
                         >
                           Copy

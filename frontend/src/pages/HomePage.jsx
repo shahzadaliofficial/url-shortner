@@ -4,7 +4,11 @@ import Footer from '../components/Footer'
 import UrlShortnerForm from '../components/UrlShortnerForm'
 
 const HomePage = () => {
-  const baseUrl = import.meta.env.VITE_FRONTEND_URL || "http://localhost:3000"
+  // Use the same API URL for frontend links since they point to the same deployment
+  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000"
+  
+  // Ensure URL doesn't end with slash for display purposes
+  const displayUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
@@ -62,12 +66,12 @@ const HomePage = () => {
                   <h3 className="font-semibold text-gray-900 mb-2">Test Link #1</h3>
                   <p className="text-sm text-gray-600 mb-3">Redirects to Google</p>
                   <a 
-                    href={`${baseUrl}/OvyNjpg`} 
+                    href={`${displayUrl}/OvyNjpg`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
-                    {baseUrl}/OvyNjpg
+                    {displayUrl}/OvyNjpg
                     <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
@@ -77,12 +81,12 @@ const HomePage = () => {
                   <h3 className="font-semibold text-gray-900 mb-2">Test Link #2</h3>
                   <p className="text-sm text-gray-600 mb-3">Redirects to ChatGPT</p>
                   <a 
-                    href={`${baseUrl}/kyRsVp0`} 
+                    href={`${displayUrl}/kyRsVp0`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
-                    {baseUrl}/kyRsVp0
+                    {displayUrl}/kyRsVp0
                     <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
