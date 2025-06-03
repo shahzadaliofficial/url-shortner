@@ -47,25 +47,26 @@ export const generateVerificationToken = () => {
 
 export const sendVerificationEmail = async (email, name, verificationToken) => {
   try {
-    const transporter = createTransporter();
-    const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}`;
-
-    // If no email configuration, log to console (for development/testing)
-    if (!transporter) {
-      console.log('=== EMAIL VERIFICATION DEBUG ===');
-      console.log(`Email: ${email}`);
-      console.log(`Name: ${name}`);
-      console.log(`Verification Token: ${verificationToken}`);
-      console.log(`Verification URL: ${verificationUrl}`);
-      console.log('Email would be sent but no SMTP config found');
-      console.log('================================');
+    // In development mode, log the verification token for testing
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+      console.log('=== EMAIL VERIFICATION DEBUG ===')
+      console.log(`Email: ${email}`)
+      console.log(`Name: ${name}`)
+      console.log(`Verification Token: ${verificationToken}`)
+      console.log(`Verification URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}`)
+      console.log('================================')
       
+      // Return success for development mode
       return {
         success: true,
-        message: 'Verification email logged to console (no SMTP config)'
-      };
+        message: 'Verification email logged to console (development mode)'
+      }
     }
-
+    
+    const transporter = createTransporter()
+    
+    const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}`
+    
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@urlshortener.com',
       to: email,
@@ -97,52 +98,32 @@ export const sendVerificationEmail = async (email, name, verificationToken) => {
           </p>
         </div>
       `
-    };
-
-    console.log('Attempting to send verification email to:', email);
-    const result = await transporter.sendMail(mailOptions);
-    console.log('Verification email sent successfully:', result.messageId);
-    return result;
+    }
+    
+    const result = await transporter.sendMail(mailOptions)
+    console.log('Verification email sent:', result.messageId)
+    return result
     
   } catch (error) {
-    console.error('Error sending verification email:', error);
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      command: error.command
-    });
-    
-    // Don't throw error, return a fallback response
-    console.log('=== EMAIL FALLBACK DEBUG ===');
-    console.log(`Email: ${email}`);
-    console.log(`Name: ${name}`);
-    console.log(`Verification Token: ${verificationToken}`);
-    console.log(`Verification URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}`);
-    console.log('Email failed to send, but user can still verify manually');
-    console.log('============================');
-    
-    return {
-      success: true,
-      message: 'Registration successful. Please check console for verification details.',
-      fallback: true
-    };
+    console.error('Error sending verification email:', error)
+    throw new Error('Failed to send verification email')
   }
 }
 
 export const sendWelcomeEmail = async (email, name) => {
   try {
-    const transporter = createTransporter();
-
-    // If no email configuration, log to console
-    if (!transporter) {
-      console.log('=== WELCOME EMAIL DEBUG ===');
-      console.log(`Sending welcome email to: ${email} (${name})`);
-      console.log('==========================');
+    // In development mode, just log the welcome email
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+      console.log('=== WELCOME EMAIL DEBUG ===')
+      console.log(`Sending welcome email to: ${email} (${name})`)
+      console.log('==========================')
       return {
         success: true,
-        message: 'Welcome email logged to console (no SMTP config)'
-      };
+        message: 'Welcome email logged to console (development mode)'
+      }
     }
+    
+    const transporter = createTransporter()
     
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@urlshortener.com',
@@ -177,18 +158,14 @@ export const sendWelcomeEmail = async (email, name) => {
           </p>
         </div>
       `
-    };
+    }
     
-    const result = await transporter.sendMail(mailOptions);
-    console.log('Welcome email sent:', result.messageId);
-    return result;
+    const result = await transporter.sendMail(mailOptions)
+    console.log('Welcome email sent:', result.messageId)
+    return result
     
   } catch (error) {
-    console.error('Error sending welcome email:', error);
-    // Don't throw error for welcome email failure - just log it
-    return {
-      success: false,
-      message: 'Welcome email failed but this is not critical'
-    };
+    console.error('Error sending welcome email:', error)
+    // Don't throw error for welcome email failure
   }
 }
