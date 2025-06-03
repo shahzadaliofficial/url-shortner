@@ -5,6 +5,6 @@ export const cookieOptions={
     maxAge: 1000*60*5,
 }
 export const jwtOptions = {
-    expiresIn: '5m', // 5 minutes
+    expiresIn: '1h', // 5 minutes
     algorithm: 'HS256'
 }

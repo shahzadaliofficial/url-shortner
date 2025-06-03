@@ -4,6 +4,7 @@ import Footer from '../components/Footer'
 import UrlShortnerForm from '../components/UrlShortnerForm'
 
 const HomePage = () => {
+  const baseUrl = import.meta.env.VITE_FRONTEND_URL || "http://localhost:3000"
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
@@ -61,12 +62,12 @@ const HomePage = () => {
                   <h3 className="font-semibold text-gray-900 mb-2">Test Link #1</h3>
                   <p className="text-sm text-gray-600 mb-3">Redirects to Google</p>
                   <a 
-                    href="http://localhost:3000/OvyNjpg" 
+                    href={`${baseUrl}/OvyNjpg`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
-                    http://localhost:3000/OvyNjpg
+                    {baseUrl}/OvyNjpg
                     <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
@@ -76,12 +77,12 @@ const HomePage = () => {
                   <h3 className="font-semibold text-gray-900 mb-2">Test Link #2</h3>
                   <p className="text-sm text-gray-600 mb-3">Redirects to ChatGPT</p>
                   <a 
-                    href="http://localhost:3000/kyRsVp0" 
+                    href={`${baseUrl}/kyRsVp0`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
-                    http://localhost:3000/kyRsVp0
+                    {baseUrl}/kyRsVp0
                     <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
