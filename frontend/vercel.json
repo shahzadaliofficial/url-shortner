@@ -2,8 +2,13 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "env": {
-    "VITE_API_URL": "https://url-shortner-sand-seven.vercel.app",
-    "VITE_FRONTEND_URL": "https://url-shortner-react-swart.vercel.app"
+    "VITE_API_URL": "https://usner.vercel.app"
   }
 }
