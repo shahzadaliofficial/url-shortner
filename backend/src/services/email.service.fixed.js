@@ -23,7 +23,7 @@ const createTransporter = () => {
 
   // For development, you can use a service like Ethereal Email for testing
   // In production, use your actual SMTP service
-  return nodemailer.createTransport({
+  return nodemailer.createTransporter({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT) || 587,
     secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
