@@ -108,4 +108,28 @@ export const resetPassword = tryCatchWrapAsync(async (req, res) => {
     })
 })
 
+export const validateEmail = tryCatchWrapAsync(async (req, res) => {
+    const { email } = req.body
+    
+    if (!email) {
+        return res.status(400).json({
+            success: false,
+            message: 'Email is required'
+        })
+    }
+    
+    const normalizedEmail = email.toLowerCase()
+    const { validateEmailDeliverability } = await import('../utils/emailValidator.js')
+    
+    // Validate email deliverability
+    const emailValidation = await validateEmailDeliverability(normalizedEmail)
+    
+    res.status(200).json({
+        success: emailValidation.isValid,
+        message: emailValidation.isValid ? 'Email is valid and deliverable' : emailValidation.error,
+        isValid: emailValidation.isValid,
+        details: emailValidation
+    })
+})
+
 

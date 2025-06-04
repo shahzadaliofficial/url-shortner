@@ -10,7 +10,7 @@ import {
   validatePassword, 
   validateName, 
   validateConfirmPassword,
-  isEmailDeliverable 
+  validateEmailDeliverabilityAsync 
 } from '../utils/validation'
 
 const Register = () => {
@@ -39,25 +39,42 @@ const Register = () => {
   }, [name])
 
   useEffect(() => {
-    const validation = validateEmail(email)
-    setEmailValidation(validation)
+    if (!email) {
+      setEmailValidation({ isValid: true, errors: [] })
+      setEmailDeliverable(true)
+      setCheckingEmail(false)
+      return
+    }
+
+    // Start with basic format validation
+    const basicValidation = validateEmail(email)
+    setEmailValidation(basicValidation)
     
     // Check email deliverability for valid emails
-    if (validation.isValid && email) {
+    if (basicValidation.isValid) {
       setCheckingEmail(true)
       const checkDeliverability = async () => {
         try {
-          const deliverable = await isEmailDeliverable(email)
-          setEmailDeliverable(deliverable)
+          const deliverabilityResult = await validateEmailDeliverabilityAsync(email)
+          
+          // Update validation with deliverability results
+          setEmailValidation({
+            isValid: deliverabilityResult.isValid,
+            errors: deliverabilityResult.errors,
+            isDeliverable: deliverabilityResult.isDeliverable
+          })
+          setEmailDeliverable(deliverabilityResult.isDeliverable)
+          
         } catch (error) {
           console.warn('Email deliverability check failed:', error)
-          setEmailDeliverable(true) // Fail open
+          // Keep basic validation, but show warning
+          setEmailDeliverable(null) // Unknown
         } finally {
           setCheckingEmail(false)
         }
       }
       
-      const timeoutId = setTimeout(checkDeliverability, 500) // Debounce
+      const timeoutId = setTimeout(checkDeliverability, 800) // Debounce for 800ms - more responsive
       return () => clearTimeout(timeoutId)
     } else {
       setEmailDeliverable(true)
@@ -78,7 +95,6 @@ const Register = () => {
                       emailValidation.isValid && 
                       passwordValidation.isValid && 
                       confirmPasswordValidation.isValid &&
-                      emailDeliverable &&
                       name && email && password && confirmPassword
 
   const handleSubmit = async (e) => {
@@ -89,12 +105,6 @@ const Register = () => {
     // Final validation check
     if (!isFormValid) {
       setError('Please fix all validation errors before submitting')
-      setLoading(false)
-      return
-    }
-
-    if (!emailDeliverable) {
-      setError('The email address provided may not be deliverable. Please check and try again.')
       setLoading(false)
       return
     }
@@ -166,29 +176,29 @@ const Register = () => {
                     required={true}
                   />
                   
-                  {/* Email deliverability status */}
-                  {email && emailValidation.isValid && (
+                  {/* Email validation status */}
+                  {email && (
                     <div className="flex items-center space-x-2 mt-2">
                       {checkingEmail ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                           <span className="text-xs text-gray-500 dark:text-gray-400">Checking email...</span>
                         </>
-                      ) : emailDeliverable ? (
+                      ) : emailValidation.isValid ? (
                         <>
                           <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
-                          <span className="text-xs text-green-600 dark:text-green-400">Email address looks good</span>
+                          <span className="text-xs text-green-600 dark:text-green-400">Valid email</span>
                         </>
-                      ) : (
+                      ) : !emailValidation.isValid && emailValidation.errors.length > 0 ? (
                         <>
-                          <svg className="h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                          <svg className="h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
-                          <span className="text-xs text-yellow-600 dark:text-yellow-400">Email may not be deliverable</span>
+                          <span className="text-xs text-red-600 dark:text-red-400">Invalid email</span>
                         </>
-                      )}
+                      ) : null}
                     </div>
                   )}
                 </div>
@@ -251,13 +261,22 @@ const Register = () => {
                   </div>
                 )}
 
+                {/* Show warning if email is not deliverable */}
+                {email && emailValidation.isValid && emailDeliverable === false && (
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+                    <p className="text-red-600 dark:text-red-400 text-sm">
+                      ⚠️ This email address cannot receive emails. Please use a different email address to continue.
+                    </p>
+                  </div>
+                )}
+
                 <div>
                   <button
                     type="submit"
-                    disabled={loading || !isFormValid}
+                    disabled={loading || !isFormValid || checkingEmail}
                     className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors duration-200"
                   >
-                    {loading ? 'Creating account...' : 'Create account'}
+                    {loading ? 'Creating account...' : checkingEmail ? 'Verifying email...' : 'Create account'}
                   </button>
                 </div>
 

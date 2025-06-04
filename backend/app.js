@@ -32,15 +32,12 @@ app.use(cookieParser())
 
 // Connect to MongoDB once
 connectDB()
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Root route
 app.get('/', (req, res) => {
-  res.status(200).json({ 
-    success: true,
-    message: 'URL Shortener API is running successfully',
-    version: '1.0.0',
-    timestamp: new Date().toISOString()
-  })
+    res.status(404).redirect(`${frontendUrl}/`);
+    
 })
 
 // Health check route
@@ -65,10 +62,7 @@ app.use(errorHandler)
 
 // Handle 404 routes
 app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  })
+  res.status(404).redirect(`${frontendUrl}/404`);
 })
 
 // Only start server if not in serverless environment

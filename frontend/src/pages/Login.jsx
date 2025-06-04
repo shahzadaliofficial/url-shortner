@@ -100,7 +100,7 @@ const Login = () => {
               autoComplete="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={setEmail}
               validation={emailValidation}
               placeholder="Enter your email address"
             />
@@ -112,7 +112,7 @@ const Login = () => {
               autoComplete="current-password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={setPassword}
               placeholder="Enter your password"
             />
 

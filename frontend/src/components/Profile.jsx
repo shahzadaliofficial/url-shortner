@@ -147,7 +147,7 @@ const Profile = () => {
               name="name"
               required
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={setName}
               placeholder="Enter your full name"
             />
 
@@ -184,7 +184,7 @@ const Profile = () => {
               name="currentPassword"
               required
               value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
+              onChange={setCurrentPassword}
               placeholder="Enter your current password"
             />
 
@@ -194,7 +194,7 @@ const Profile = () => {
               name="newPassword"
               required
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={setNewPassword}
               validation={passwordValidation}
               placeholder="Enter your new password"
             />
@@ -205,7 +205,7 @@ const Profile = () => {
               name="confirmPassword"
               required
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={setConfirmPassword}
               placeholder="Confirm your new password"
               validation={
                 confirmPassword && newPassword !== confirmPassword

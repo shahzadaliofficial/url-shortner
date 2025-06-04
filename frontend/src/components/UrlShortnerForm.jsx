@@ -87,7 +87,7 @@ const UrlShortnerForm = () => {
               value={customId}
               onChange={(e) => setCustomId(e.target.value)}
               placeholder={isAuthenticated ? 'my-custom-url' : 'Login to use custom URLs'} 
-              className='flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-r focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors duration-200' 
+              className='flex-1 w-0 p-2 border border-gray-300 dark:border-gray-600 rounded-r focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors duration-200' 
               pattern="[a-zA-Z0-9-_]+" 
               title="Only letters, numbers, hyphens, and underscores are allowed"
               disabled={!isAuthenticated}

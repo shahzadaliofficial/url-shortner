@@ -179,7 +179,7 @@ const ResetPassword = () => {
                 autoComplete="new-password"
                 required
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={setNewPassword}
                 validation={passwordValidation}
                 placeholder="Enter your new password"
               />
@@ -191,7 +191,7 @@ const ResetPassword = () => {
                 autoComplete="new-password"
                 required
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={setConfirmPassword}
                 placeholder="Confirm your new password"
                 validation={
                   confirmPassword && newPassword !== confirmPassword

@@ -1,5 +1,5 @@
 import express from "express"
-import { userRegister, userLogin, userLogout, getCurrentuser, verifyEmail, resendVerification, updateProfile, changePassword, forgotPassword, resetPassword } from "../controller/auth.controller.js"
+import { userRegister, userLogin, userLogout, getCurrentuser, verifyEmail, resendVerification, updateProfile, changePassword, forgotPassword, resetPassword, validateEmail } from "../controller/auth.controller.js"
 import { authMiddleware } from '../middleware/auth.middleware.js';
 
 const router = express.Router()
@@ -9,6 +9,7 @@ router.post('/login', userLogin)
 router.post('/logout', userLogout)
 router.post('/verify-email', verifyEmail)
 router.post('/resend-verification', resendVerification)
+router.post('/validate-email', validateEmail)
 router.get('/me', authMiddleware, getCurrentuser)
 
 // Profile management routes

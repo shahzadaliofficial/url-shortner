@@ -1,3 +1,5 @@
+import { validateEmailDeliverability } from '../api/auth.api'
+
 // Email validation utility
 export const validateEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -209,5 +211,52 @@ export const isEmailDeliverable = async (email) => {
   } catch (error) {
     console.warn('Email deliverability check failed:', error)
     return true // Fail open - assume email is deliverable
+  }
+}
+
+// Async email deliverability validation using backend API
+export const validateEmailDeliverabilityAsync = async (email) => {
+  try {
+    // First do basic format validation
+    const formatValidation = validateEmail(email)
+    if (!formatValidation.isValid) {
+      return {
+        isValid: false,
+        errors: formatValidation.errors,
+        isDeliverable: false
+      }
+    }
+
+    // Then check deliverability via backend API
+    const response = await validateEmailDeliverability(email)
+    
+    return {
+      isValid: response.data.isValid,
+      errors: response.data.isValid ? [] : [response.data.message],
+      isDeliverable: response.data.isValid,
+      details: response.data.details
+    }
+  } catch (error) {
+    console.error('Email deliverability check failed:', error)
+    
+    // If API fails, fall back to format validation only
+    const formatValidation = validateEmail(email)
+    return {
+      isValid: formatValidation.isValid,
+      errors: formatValidation.errors,
+      isDeliverable: null, // Unknown
+      apiError: error.response?.data?.message || 'Unable to verify email deliverability'
+    }
+  }
+}
+
+// Quick email deliverability check (returns promise)
+export const checkEmailDeliverability = async (email) => {
+  try {
+    const response = await validateEmailDeliverability(email)
+    return response.data.isValid
+  } catch (error) {
+    console.error('Email deliverability check failed:', error)
+    return null // Unknown
   }
 }

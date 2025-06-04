@@ -77,3 +77,10 @@ export const resetPassword = (token, newPassword) => {
     newPassword
   })
 }
+
+// Validate email deliverability
+export const validateEmailDeliverability = (email) => {
+  return axiosInstance.post('/api/auth/validate-email', {
+    email
+  })
+}

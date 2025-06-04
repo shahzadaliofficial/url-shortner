@@ -1,13 +1,21 @@
 import { createUser,findUserByEmail, findUserById, updateUserVerification, updateUserProfile, updateUserPassword, updateUserPasswordResetToken, findUserByPasswordResetToken, clearPasswordResetToken } from '../dao/user.dao.js'
-import { ConflictError, NotFoundError, UnauthorizedError } from '../utils/errorHandler.js';
+import { ConflictError, NotFoundError, UnauthorizedError, BadRequestError } from '../utils/errorHandler.js';
 import { signJwtToken } from '../utils/helper.utils.js';
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from './email.service.js';
+import { validateEmailDeliverability } from '../utils/emailValidator.js';
 import bcrypt from 'bcrypt';
 
 
 export const registerUserService = async (name, email, password)=>{
+    // Check if user already exists
     const user = await findUserByEmail(email)
     if (user) throw new ConflictError("User Already Exist");
+    
+    // Validate email deliverability before creating account
+    const emailValidation = await validateEmailDeliverability(email);
+    if (!emailValidation.isValid) {
+        throw new BadRequestError(`Invalid email address: ${emailValidation.error}`);
+    }
     
     // Hash password before storing
     const saltRounds = 12;
@@ -19,8 +27,14 @@ export const registerUserService = async (name, email, password)=>{
     
     const newUser = await createUser(name, email, hashedPassword, verificationToken, verificationExpires)
     
-    // Send verification email
-    await sendVerificationEmail(email, name, verificationToken)
+    // Send verification email - now we know the email is deliverable
+    try {
+        await sendVerificationEmail(email, name, verificationToken)
+    } catch (emailError) {
+        console.error('Failed to send verification email:', emailError);
+        // Even if email sending fails, we've already validated the email is deliverable
+        // The user can request a resend later
+    }
     
     // Return user info without token (user needs to verify email first)
     return {
@@ -108,6 +122,12 @@ export const resendVerificationService = async (email) => {
         throw new ConflictError("Email is already verified");
     }
     
+    // Validate email deliverability before sending
+    const emailValidation = await validateEmailDeliverability(email);
+    if (!emailValidation.isValid) {
+        throw new BadRequestError(`Cannot send verification email: ${emailValidation.error}`);
+    }
+    
     // Generate new verification token
     const verificationToken = generateVerificationToken()
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -165,6 +185,13 @@ export const forgotPasswordService = async (email) => {
     
     // Don't reveal if user exists or not for security
     if (!user) return
+    
+    // Validate email deliverability before sending reset email
+    const emailValidation = await validateEmailDeliverability(email);
+    if (!emailValidation.isValid) {
+        console.error(`Cannot send password reset email to ${email}: ${emailValidation.error}`);
+        return; // Silently fail for security - don't reveal invalid email
+    }
     
     // Generate password reset token
     const resetToken = generateVerificationToken() // Reuse token generation logic

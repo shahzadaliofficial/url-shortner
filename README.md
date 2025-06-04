@@ -1,166 +1,232 @@
 # URL Shortener
 
-A modern, full-stack URL shortener application with user authentication, email verification, and comprehensive form validation.
+A modern, full-stack URL shortening service built with React, Node.js, Express, and MongoDB. Features real-time email validation using Abstract API, user authentication, custom short URLs, and comprehensive URL analytics.
 
-## Features
+## 🚀 Features
 
-- 🔗 **URL Shortening**: Create short URLs from long ones
-- 🎨 **Custom Short URLs**: Create custom branded short links  
-- 👤 **User Authentication**: Register, login, and manage your URLs
-- ✉️ **Email Verification**: Secure email verification for new accounts
-- 🔒 **Form Validation**: Comprehensive email and password validation
-- 👤 **Profile Management**: Update profile and change passwords
-- 🔑 **Password Reset**: Forgot password functionality
-- 🌙 **Dark Mode**: Toggle between light and dark themes
-- 📱 **Responsive Design**: Works seamlessly on all devices
+### Core Functionality
+- **URL Shortening**: Convert long URLs into short, shareable links
+- **Custom Short URLs**: Authenticated users can create custom short link IDs
+- **Click Analytics**: Track clicks, timestamps, and referrer data
+- **URL Management**: View, edit, and delete your shortened URLs
 
-## Tech Stack
+### Authentication & Security
+- **User Registration & Login**: Secure account creation with email verification
+- **Real-time Email Validation**: Advanced email verification using Abstract API
+- **Educational Domain Support**: Special handling for educational institutions (.edu, .edu.pk, .ac.uk)
+- **Password Reset**: Secure password recovery via email
+- **JWT Authentication**: Token-based authentication system
+
+### User Experience
+- **Dark/Light Theme**: Toggle between themes with persistent preference
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Real-time Validation**: Instant feedback on forms and inputs
+- **Loading States**: Smooth loading indicators throughout the app
+
+## 🛠️ Tech Stack
 
 ### Frontend
-- **React 18** - Modern UI library
-- **Vite** - Fast build tool
+- **React 18** - Modern React with hooks
+- **Vite** - Fast development and build tool
 - **Tailwind CSS** - Utility-first CSS framework
 - **React Router** - Client-side routing
+- **Axios** - HTTP client for API calls
 
 ### Backend
 - **Node.js** - JavaScript runtime
-- **Express.js** - Web framework
+- **Express.js** - Web application framework
 - **MongoDB** - NoSQL database
-- **JWT** - Authentication tokens
-- **Nodemailer** - Email service
+- **Mongoose** - MongoDB object modeling
+- **JWT** - JSON Web Token authentication
 - **bcrypt** - Password hashing
+- **Nodemailer** - Email sending service
 
-## Quick Start
+### External Services
+- **Abstract API** - Email validation and deliverability checking
+- **MongoDB Atlas** - Cloud database hosting
+- **Gmail SMTP** - Email delivery service
 
-### Prerequisites
-- Node.js 16+ 
-- MongoDB database
-- Email service (Gmail/SMTP)
+## 📋 Prerequisites
 
-### Installation
+- Node.js (v16 or higher)
+- npm or yarn
+- MongoDB Atlas account or local MongoDB installation
+- Abstract API key for email validation
+- Gmail account for SMTP (or other email service)
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd URL-Shortner
-   ```
+## 🔧 Installation & Setup
 
-2. **Install backend dependencies**
-   ```bash
-   cd backend
-   npm install
-   ```
+### 1. Clone the Repository
+```bash
+git clone <your-repo-url>
+cd URL-Shortner
+```
 
-3. **Install frontend dependencies**
-   ```bash
-   cd ../frontend
-   npm install
-   ```
+### 2. Backend Setup
+```bash
+cd backend
+npm install
+```
 
-4. **Configure environment variables**
-   
-   Create `.env` file in backend directory:
-   ```env
-   MONGO_URI=mongodb://localhost:27017/url-shortener
-   JWT_SECRET=your-jwt-secret-key
-   EMAIL_USER=your-email@gmail.com
-   EMAIL_PASS=your-app-password
-   FRONTEND_URL=http://localhost:5173
-   PORT=3000
-   ```
+Create a `.env` file in the backend directory:
+```env
+# Database Configuration
+MONGO_URI=mongodb+srv://your-username:your-password@cluster.mongodb.net/url-shortner?retryWrites=true&w=majority
 
-5. **Start the application**
-   
-   Backend (Terminal 1):
-   ```bash
-   cd backend
-   npm start
-   ```
-   
-   Frontend (Terminal 2):
-   ```bash
-   cd frontend
-   npm run dev
-   ```
+# Application URLs
+FRONTEND_URL=http://localhost:5173
+APP_URI=http://localhost:3000/
 
-6. **Access the application**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:3000
+# JWT Security
+JWT_SECRET=your-very-secure-jwt-secret-key
 
-## Features Overview
+# Environment
+NODE_ENV=development
 
-### Authentication & Security
-- JWT-based authentication
-- Email verification for new accounts
-- Password strength validation
-- Secure password reset flow
-- Protected routes
+# Email Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+FROM_EMAIL=your-email@gmail.com
 
-### URL Management
-- Create short URLs from long URLs
-- Custom short URL creation
-- View all your shortened URLs
-- Click tracking and analytics
+# Abstract API Email Validation
+ABSTRACT_API_KEY=your-abstract-api-key
+```
 
-### User Experience
-- Responsive design for all devices
-- Dark/light mode toggle
-- Real-time form validation
-- Loading states and error handling
-- Success/error notifications
+### 3. Frontend Setup
+```bash
+cd ../frontend
+npm install
+```
 
-## API Endpoints
+### 4. Start Development Servers
+
+**Backend** (Terminal 1):
+```bash
+cd backend
+npm run dev
+```
+
+**Frontend** (Terminal 2):
+```bash
+cd frontend
+npm run dev
+```
+
+The application will be available at:
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3000
+
+## 🔑 API Keys Setup
+
+### Abstract API (Email Validation)
+1. Visit [Abstract API](https://www.abstractapi.com/api/email-validation-api)
+2. Sign up for a free account
+3. Get your API key from the dashboard
+4. Add it to your `.env` file as `ABSTRACT_API_KEY`
+
+### Gmail SMTP Setup
+1. Enable 2-factor authentication on your Gmail account
+2. Generate an App Password:
+   - Go to Google Account settings
+   - Security → 2-Step Verification → App passwords
+   - Generate password for "Mail"
+3. Use this app password in your `.env` file as `SMTP_PASS`
+
+## 📊 API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
 - `POST /api/auth/logout` - User logout
 - `POST /api/auth/verify-email` - Email verification
+- `POST /api/auth/validate-email` - Real-time email validation
 - `POST /api/auth/forgot-password` - Password reset request
-- `POST /api/auth/reset-password` - Password reset
-- `GET /api/auth/me` - Get current user
-- `PUT /api/auth/profile` - Update profile
-- `PUT /api/auth/change-password` - Change password
+- `POST /api/auth/reset-password` - Password reset confirmation
 
 ### URL Management
-- `POST /api/short` - Create short URL
-- `POST /api/custom` - Create custom short URL
-- `GET /api/user/urls` - Get user URLs
+- `POST /api/shorten` - Create short URL
+- `GET /api/urls` - Get user's URLs (authenticated)
+- `GET /api/urls/:id/analytics` - Get URL analytics
+- `DELETE /api/urls/:id` - Delete URL
 - `GET /:shortId` - Redirect to original URL
 
-## Deployment
+### User
+- `GET /api/user/profile` - Get user profile
+- `PUT /api/user/profile` - Update user profile
+
+## 🎨 Key Features Explained
+
+### Real-time Email Validation
+The application uses Abstract API to validate email addresses in real-time as users type:
+
+- **Format Validation**: Basic regex pattern matching
+- **Deliverability Check**: Verifies if email can actually receive messages
+- **Educational Domain Support**: Special handling for university emails
+- **Autocorrect Disabled**: Prevents false negatives from domain suggestions
+
+### Custom Short URLs
+Authenticated users can create custom short URL identifiers:
+- Pattern validation (letters, numbers, hyphens, underscores)
+- Uniqueness checking
+- Fallback to auto-generated IDs if custom ID is taken
+
+### Click Analytics
+Comprehensive tracking of URL usage:
+- Total click count
+- Click timestamps
+- Referrer information
+- Geographic data (if implemented)
+
+## 🔒 Security Features
+
+- **Password Hashing**: bcrypt with salt rounds
+- **JWT Tokens**: Secure authentication tokens
+- **Email Verification**: Required for account activation
+- **Input Validation**: Server-side validation for all inputs
+- **Rate Limiting**: Protection against abuse (can be added)
+- **CORS Configuration**: Secure cross-origin requests
+
+## 🚀 Deployment
 
 ### Backend Deployment (Vercel)
-1. Configure `vercel.json` in backend directory
-2. Set environment variables in Vercel dashboard
-3. Deploy: `vercel --prod`
+The backend includes Vercel configuration in `vercel.json`. Set up environment variables in Vercel dashboard.
 
-### Frontend Deployment (Vercel)
-1. Configure `vercel.json` in frontend directory
-2. Set build commands and environment variables
-3. Deploy: `vercel --prod`
+### Frontend Deployment (Vercel/Netlify)
+The frontend is ready for deployment with production builds.
 
-## Environment Variables
+### Environment Variables for Production
+Update the following for production:
+- `NODE_ENV=production`
+- `FRONTEND_URL=https://your-frontend-domain.com`
+- `APP_URI=https://your-backend-domain.com/`
 
-### Backend
-- `MONGO_URI` - MongoDB connection string
-- `JWT_SECRET` - JWT secret key
-- `EMAIL_USER` - Email service username
-- `EMAIL_PASS` - Email service password
-- `FRONTEND_URL` - Frontend URL for CORS
-- `PORT` - Server port (default: 3000)
-
-### Frontend
-- `VITE_API_URL` - Backend API URL
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📝 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🐛 Known Issues
+
+- Educational domain validation may need fine-tuning for specific institutions
+- Rate limiting not implemented (recommended for production)
+- Geographic analytics not implemented
+
+## 📞 Support
+
+For support, email your-email@example.com or create an issue in the GitHub repository.
+
+## 🙏 Acknowledgments
+
+- [Abstract API](https://www.abstractapi.com/) for email validation services
+- [Tailwind CSS](https://tailwindcss.com/) for styling framework
+- [React](https://reactjs.org/) team for the amazing frontend library
+- [Express.js](https://expressjs.com/) for the backend framework
