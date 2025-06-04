@@ -28,19 +28,8 @@ app.use(express.json({ limit: '16kb' }))
 app.use(express.urlencoded({ extended: true, limit: '16kb' }))
 app.use(cookieParser())
 
-// Ensure database connection for each request
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (error) {
-    console.error('Database connection error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Database connection failed'
-    });
-  }
-});
+// Connect to database on startup
+connectDB().catch(console.error);
 
 // Health check route
 app.get('/', (req, res) => {
