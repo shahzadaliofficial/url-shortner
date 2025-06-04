@@ -8,6 +8,8 @@ import tryCatchWrapAsync from '../utils/tryCatchWrapper.js';
 export const shortUrlCreate=tryCatchWrapAsync(async(req, res)=>{
       const {url, customId}=req.body
       
+      console.log('URL Create - User:', !!req.user, 'CustomId:', !!customId, 'Token:', !!req.cookies.accessToken)
+      
       let shortUrl
       if(req.user){
         const userId = req.user._id

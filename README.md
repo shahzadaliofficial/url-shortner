@@ -1,196 +1,166 @@
 # URL Shortener
 
-A full-stack URL shortening service with user authentication, custom URLs, and analytics.
-
-![URL Shortener](https://img.shields.io/badge/React-18.0+-blue.svg)
-![Node.js](https://img.shields.io/badge/Node.js-16.0+-green.svg)
-![MongoDB](https://img.shields.io/badge/MongoDB-5.0+-brightgreen.svg)
+A modern, full-stack URL shortener application with user authentication, email verification, and comprehensive form validation.
 
 ## Features
 
-### Core Features
-- ✅ **URL Shortening**: Convert long URLs into short, shareable links
-- ✅ **Custom URLs**: Create branded short links with custom aliases (login required)
-- ✅ **Click Tracking**: Monitor the number of clicks on your shortened URLs
-- ✅ **User Authentication**: Secure JWT-based authentication system
-- ✅ **User Dashboard**: Manage and view all your shortened URLs with statistics
-
-### User Experience
-- 🎯 **Guest Access**: Create short URLs without registration
-- 🔐 **Protected Custom URLs**: Custom URL creation requires user login
-- 📊 **Analytics Dashboard**: View click statistics for all your URLs
-- 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
-- ⚡ **Fast Performance**: Optimized for speed and reliability
+- 🔗 **URL Shortening**: Create short URLs from long ones
+- 🎨 **Custom Short URLs**: Create custom branded short links  
+- 👤 **User Authentication**: Register, login, and manage your URLs
+- ✉️ **Email Verification**: Secure email verification for new accounts
+- 🔒 **Form Validation**: Comprehensive email and password validation
+- 👤 **Profile Management**: Update profile and change passwords
+- 🔑 **Password Reset**: Forgot password functionality
+- 🌙 **Dark Mode**: Toggle between light and dark themes
+- 📱 **Responsive Design**: Works seamlessly on all devices
 
 ## Tech Stack
 
 ### Frontend
-- **React 19.1.0** - Modern UI library
-- **React Router DOM** - Client-side routing
-- **Tailwind CSS 4.1.8** - Utility-first CSS framework
-- **Axios** - HTTP client for API calls
-- **Vite** - Fast build tool and development server
+- **React 18** - Modern UI library
+- **Vite** - Fast build tool
+- **Tailwind CSS** - Utility-first CSS framework
+- **React Router** - Client-side routing
 
 ### Backend
 - **Node.js** - JavaScript runtime
-- **Express.js 5.1.0** - Web application framework
+- **Express.js** - Web framework
 - **MongoDB** - NoSQL database
-- **Mongoose 8.15.1** - MongoDB object modeling
-- **JWT (jsonwebtoken)** - Authentication tokens
-- **Nanoid** - URL-safe unique ID generator
-- **CORS** - Cross-origin resource sharing
+- **JWT** - Authentication tokens
+- **Nodemailer** - Email service
+- **bcrypt** - Password hashing
 
-## Getting Started
+## Quick Start
 
 ### Prerequisites
-- Node.js (v16.0 or higher)
-- MongoDB (v5.0 or higher)
-- npm or yarn package manager
+- Node.js 16+ 
+- MongoDB database
+- Email service (Gmail/SMTP)
 
 ### Installation
 
 1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd URL-Shortner
-```
+   ```bash
+   git clone <repository-url>
+   cd URL-Shortner
+   ```
 
-2. **Backend Setup**
-```bash
-cd backend
-npm install
-```
+2. **Install backend dependencies**
+   ```bash
+   cd backend
+   npm install
+   ```
 
-3. **Frontend Setup**
-```bash
-cd frontend
-npm install
-```
+3. **Install frontend dependencies**
+   ```bash
+   cd ../frontend
+   npm install
+   ```
 
-4. **Environment Configuration**
-Create a `.env` file in the backend directory:
-```env
-MONGO_URI=mongodb://localhost:27017/url-shortner
-APP_URI=http://localhost:3000/
-JWT_SECRET=your-super-secret-jwt-key
-NODE_ENV=development
-```
+4. **Configure environment variables**
+   
+   Create `.env` file in backend directory:
+   ```env
+   MONGO_URI=mongodb://localhost:27017/url-shortener
+   JWT_SECRET=your-jwt-secret-key
+   EMAIL_USER=your-email@gmail.com
+   EMAIL_PASS=your-app-password
+   FRONTEND_URL=http://localhost:5173
+   PORT=3000
+   ```
 
-5. **Database Setup**
-Ensure MongoDB is running on your system:
-```bash
-# Start MongoDB (varies by OS)
-mongod
-```
+5. **Start the application**
+   
+   Backend (Terminal 1):
+   ```bash
+   cd backend
+   npm start
+   ```
+   
+   Frontend (Terminal 2):
+   ```bash
+   cd frontend
+   npm run dev
+   ```
 
-### Running the Application
+6. **Access the application**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3000
 
-1. **Start the Backend Server**
-```bash
-cd backend
-npm run dev
-```
-Backend will run on http://localhost:3000
+## Features Overview
 
-2. **Start the Frontend Development Server**
-```bash
-cd frontend
-npm run dev
-```
-Frontend will run on http://localhost:5173 (or next available port)
+### Authentication & Security
+- JWT-based authentication
+- Email verification for new accounts
+- Password strength validation
+- Secure password reset flow
+- Protected routes
 
-3. **Access the Application**
-Open your browser and navigate to the frontend URL displayed in the terminal.
+### URL Management
+- Create short URLs from long URLs
+- Custom short URL creation
+- View all your shortened URLs
+- Click tracking and analytics
+
+### User Experience
+- Responsive design for all devices
+- Dark/light mode toggle
+- Real-time form validation
+- Loading states and error handling
+- Success/error notifications
 
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login user
-- `POST /api/auth/logout` - Logout user
-- `POST /api/auth/me` - Get current user
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `POST /api/auth/verify-email` - Email verification
+- `POST /api/auth/forgot-password` - Password reset request
+- `POST /api/auth/reset-password` - Password reset
+- `GET /api/auth/me` - Get current user
+- `PUT /api/auth/profile` - Update profile
+- `PUT /api/auth/change-password` - Change password
 
 ### URL Management
-- `POST /api/create` - Create short URL (guests can use without custom ID)
-- `POST /api/create/custom` - Create custom short URL (authentication required)
-- `GET /:id` - Redirect to original URL
-- `POST /api/user/urls` - Get user's URLs (authentication required)
+- `POST /api/short` - Create short URL
+- `POST /api/custom` - Create custom short URL
+- `GET /api/user/urls` - Get user URLs
+- `GET /:shortId` - Redirect to original URL
 
-## Usage
+## Deployment
 
-### For Guests (No Registration Required)
-1. Visit the homepage
-2. Enter a long URL in the form
-3. Click "Convert to Short URL"
-4. Copy and share your shortened URL
+### Backend Deployment (Vercel)
+1. Configure `vercel.json` in backend directory
+2. Set environment variables in Vercel dashboard
+3. Deploy: `vercel --prod`
 
-### For Registered Users
-1. **Register/Login**: Create an account or sign in
-2. **Create Custom URLs**: Use the custom ID field to create branded links
-3. **Dashboard Access**: View all your URLs and click statistics
-4. **Track Performance**: Monitor how many clicks each URL receives
+### Frontend Deployment (Vercel)
+1. Configure `vercel.json` in frontend directory
+2. Set build commands and environment variables
+3. Deploy: `vercel --prod`
 
-### Key User Flows
+## Environment Variables
 
-**Guest User wanting Custom URL:**
-1. Guest enters URL and custom ID
-2. System prompts to login
-3. User is redirected to login page
-4. After login, user can create custom URLs
+### Backend
+- `MONGO_URI` - MongoDB connection string
+- `JWT_SECRET` - JWT secret key
+- `EMAIL_USER` - Email service username
+- `EMAIL_PASS` - Email service password
+- `FRONTEND_URL` - Frontend URL for CORS
+- `PORT` - Server port (default: 3000)
 
-**Registered User Dashboard:**
-1. Login to access dashboard
-2. View all created URLs with statistics
-3. Create new URLs with custom IDs
-4. Copy URLs for sharing
-5. Track click performance
-
-## Project Structure
-
-```
-URL-Shortner/
-├── README.md
-├── backend/
-│   ├── app.js                 # Express app entry point
-│   ├── package.json
-│   └── src/
-│       ├── config/            # Configuration files
-│       ├── controller/        # Route controllers
-│       ├── dao/              # Data access objects
-│       ├── middleware/        # Custom middleware
-│       ├── models/           # Mongoose models
-│       ├── routes/           # API routes
-│       ├── services/         # Business logic
-│       └── utils/            # Utility functions
-└── frontend/
-    ├── package.json
-    ├── index.html
-    └── src/
-        ├── App.jsx           # Main app component
-        ├── main.jsx          # App entry point
-        ├── api/              # API service functions
-        ├── components/       # Reusable components
-        ├── contexts/         # React contexts
-        ├── pages/           # Page components
-        └── utils/           # Utility functions
-```
+### Frontend
+- `VITE_API_URL` - Backend API URL
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE).
-
-## Support
-
-If you encounter any issues or have questions, please create an issue in the repository.
-
----
-
-**Built with ❤️ using React, Node.js, and MongoDB**
+This project is licensed under the MIT License.

@@ -52,3 +52,28 @@ export const resendVerificationEmail = (email) => {
 export const getUserUrls = () => {
   return axiosInstance.get('/api/user/urls')
 }
+
+// Update user profile
+export const updateProfile = (profileData) => {
+  return axiosInstance.put('/api/auth/profile', profileData)
+}
+
+// Change password
+export const changePassword = (passwordData) => {
+  return axiosInstance.put('/api/auth/change-password', passwordData)
+}
+
+// Forgot password - send reset email
+export const forgotPassword = (email) => {
+  return axiosInstance.post('/api/auth/forgot-password', {
+    email
+  })
+}
+
+// Reset password with token
+export const resetPassword = (token, newPassword) => {
+  return axiosInstance.post('/api/auth/reset-password', {
+    token,
+    newPassword
+  })
+}

@@ -45,10 +45,15 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false)
   }
 
+  const updateUser = (userData) => {
+    setUser(userData)
+  }
+
   const value = {
     user,
     login,
     logout,
+    updateUser,
     isAuthenticated,
     loading,
     checkAuthStatus

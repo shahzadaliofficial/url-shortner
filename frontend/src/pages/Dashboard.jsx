@@ -4,6 +4,8 @@ import { getUserUrls, logoutUser } from '../api/auth.api'
 import { createShortUrl, createCustomShortUrl } from '../api/shortUrl.api'
 import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from '../components/LoadingSpinner'
+import ThemeToggle from '../components/ThemeToggle'
+import Profile from '../components/Profile'
 
 const Dashboard = () => {
   const { user, isAuthenticated, logout } = useAuth()
@@ -17,58 +19,25 @@ const Dashboard = () => {
   const [error, setError] = useState('')
   const [lastUpdated, setLastUpdated] = useState(null)
   
+  // Tab navigation state
+  const [activeTab, setActiveTab] = useState('urls')
+  
   // URL creation form states
-  const [fullUrl, setFullUrl] = useState('')
+  const [fullUrl, setFullUrl] = useState('https://')
   const [customId, setCustomId] = useState('')
   const [shortUrl, setShortUrl] = useState('')
   const [creating, setCreating] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [copiedUrls, setCopiedUrls] = useState(new Set())
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login')
       return
     }
+    // Only fetch URLs on initial load
     fetchUserUrls()
-    
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(() => fetchUserUrls(true), 30000)
-    
-    return () => clearInterval(interval)
   }, [isAuthenticated, navigate])
-
-  // Add effect to refresh data when component mounts or when user navigates back
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && isAuthenticated) {
-        fetchUserUrls(true)
-      }
-    }
-
-    const handleFocus = () => {
-      if (isAuthenticated) {
-        fetchUserUrls(true)
-      }
-    }
-
-    const handleKeyPress = (e) => {
-      // Refresh on F5 or Ctrl+R
-      if ((e.key === 'F5' || (e.ctrlKey && e.key === 'r')) && isAuthenticated) {
-        e.preventDefault()
-        fetchUserUrls(true)
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    window.addEventListener('focus', handleFocus)
-    document.addEventListener('keydown', handleKeyPress)
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      window.removeEventListener('focus', handleFocus)
-      document.removeEventListener('keydown', handleKeyPress)
-    }
-  }, [isAuthenticated])
 
   const fetchUserUrls = async (isRefresh = false) => {
     try {
@@ -116,7 +85,7 @@ const Dashboard = () => {
       }
       
       setShortUrl(response.data.url)
-      setFullUrl('')
+      setFullUrl('https://')
       setCustomId('')
       
       // Refresh the URLs list
@@ -134,6 +103,27 @@ const Dashboard = () => {
       await navigator.clipboard.writeText(shortUrl)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      setError('Failed to copy URL')
+    }
+  }
+
+  const handleCopyUrl = async (shortUrlId) => {
+    try {
+      const urlToCopy = `${displayUrl}/${shortUrlId}`
+      await navigator.clipboard.writeText(urlToCopy)
+      
+      // Add to copied set
+      setCopiedUrls(prev => new Set(prev).add(shortUrlId))
+      
+      // Remove from copied set after 2 seconds
+      setTimeout(() => {
+        setCopiedUrls(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(shortUrlId)
+          return newSet
+        })
+      }, 2000)
     } catch (err) {
       setError('Failed to copy URL')
     }
@@ -157,37 +147,69 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white dark:bg-gray-800 shadow transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">URL Shortener Dashboard</h1>
-              <p className="text-gray-600">Welcome back, {user?.name}!</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">URL Shortener Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-300">Welcome back, {user?.name}!</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-            >
-              Logout
-            </button>
+            <div className="flex items-center space-x-4">
+              <ThemeToggle />
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* URL Creation Form */}
-          <div className="bg-white overflow-hidden shadow rounded-lg mb-8">
+          {/* Tab Navigation */}
+          <div className="border-b border-gray-200 dark:border-gray-700 mb-8">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('urls')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                  activeTab === 'urls'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+              >
+                My URLs ({urls.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                  activeTab === 'profile'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+              >
+                Profile Settings
+              </button>
+            </nav>
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === 'urls' ? (
+            <>
+              {/* URL Creation Form */}
+              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg mb-8 transition-colors duration-200">
             <div className="px-4 py-5 sm:p-6">
-              <h2 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+              <h2 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
                 Create Short URL
               </h2>
               
               <form onSubmit={handleCreateUrl} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Full URL
                   </label>
                   <input
@@ -195,29 +217,32 @@ const Dashboard = () => {
                     value={fullUrl}
                     onChange={(e) => setFullUrl(e.target.value)}
                     placeholder="https://example.com/very/long/url"
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
+                    className="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border transition-colors duration-200"
                     required
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Custom Short ID (Optional)
                   </label>
-                  <div className="mt-1 flex rounded-md shadow-sm">
-                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                      {displayUrl}/
-                    </span>
-                    <input
-                      type="text"
-                      value={customId}
-                      onChange={(e) => setCustomId(e.target.value)}
-                      placeholder="my-custom-url"
-                      className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border-gray-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm border"
-                      pattern="[a-zA-Z0-9-_]+"
-                    />
+                  <div className="mt-1">
+                    <div className="flex flex-col sm:flex-row rounded-md shadow-sm">
+                      <span className="inline-flex items-center px-3 py-2 sm:py-0 sm:rounded-l-md rounded-t-md sm:rounded-t-none border border-b-0 sm:border-b sm:border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-600 text-gray-500 dark:text-gray-300 text-sm truncate">
+                        <span className="hidden sm:inline">{displayUrl}/</span>
+                        <span className="sm:hidden">URL will be: {displayUrl}/</span>
+                      </span>
+                      <input
+                        type="text"
+                        value={customId}
+                        onChange={(e) => setCustomId(e.target.value)}
+                        placeholder="my-custom-url"
+                        className="flex-1 min-w-0 block w-full px-3 py-2 rounded-b-md sm:rounded-b-none sm:rounded-r-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 text-sm border transition-colors duration-200"
+                        pattern="[a-zA-Z0-9-_]+"
+                      />
+                    </div>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Only letters, numbers, hyphens, and underscores allowed
                   </p>
                 </div>
@@ -225,33 +250,33 @@ const Dashboard = () => {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:bg-gray-400 dark:disabled:bg-gray-600 transition-colors duration-200"
                 >
                   {creating ? 'Creating...' : 'Create Short URL'}
                 </button>
               </form>
 
               {error && (
-                <div className={`mt-4 p-3 rounded-md text-sm ${
+                <div className={`mt-4 p-3 rounded-md text-sm transition-colors duration-200 ${
                   error.includes('successfully') 
-                    ? 'bg-green-50 border border-green-200 text-green-800' 
-                    : 'bg-red-50 border border-red-200 text-red-600'
+                    ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-400' 
+                    : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
                 }`}>
                   {error}
                 </div>
               )}
 
               {shortUrl && (
-                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
-                  <h3 className="text-sm font-medium text-green-800 mb-2">URL Created Successfully!</h3>
-                  <div className="flex items-center justify-between bg-white border rounded px-3 py-2">
-                    <span className="text-sm text-gray-900 truncate flex-1">{shortUrl}</span>
+                <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md transition-colors duration-200">
+                  <h3 className="text-sm font-medium text-green-800 dark:text-green-400 mb-2">URL Created Successfully!</h3>
+                  <div className="flex items-center justify-between bg-white dark:bg-gray-700 border dark:border-gray-600 rounded px-3 py-2 transition-colors duration-200">
+                    <span className="text-sm text-gray-900 dark:text-gray-100 truncate flex-1">{shortUrl}</span>
                     <button
                       onClick={handleCopy}
                       className={`ml-2 px-3 py-1 rounded text-sm transition-all duration-300 ${
                         copied 
-                          ? 'bg-green-600 text-white' 
-                          : 'bg-blue-500 text-white hover:bg-blue-600'
+                          ? 'bg-green-600 dark:bg-green-700 text-white' 
+                          : 'bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700'
                       }`}
                     >
                       {copied ? 'Copied!' : 'Copy'}
@@ -263,16 +288,16 @@ const Dashboard = () => {
           </div>
 
           {/* URLs List */}
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
+          <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md transition-colors duration-200">
             <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
               <div>
-                <h2 className="text-lg leading-6 font-medium text-gray-900">
+                <h2 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
                   Your URLs ({urls.length})
                 </h2>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
                   Manage and track your shortened URLs
                   {lastUpdated && (
-                    <span className="ml-2 text-xs text-gray-400">
+                    <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
                       • Last updated: {lastUpdated.toLocaleTimeString()}
                     </span>
                   )}
@@ -281,7 +306,7 @@ const Dashboard = () => {
               <button
                 onClick={() => fetchUserUrls(true)}
                 disabled={loading || refreshing}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 <svg className={`-ml-0.5 mr-2 h-4 w-4 ${(loading || refreshing) ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -292,20 +317,20 @@ const Dashboard = () => {
             
             {urls.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500">No URLs created yet. Create your first short URL above!</p>
+                <p className="text-gray-500 dark:text-gray-400">No URLs created yet. Create your first short URL above!</p>
               </div>
             ) : (
-              <ul className="divide-y divide-gray-200">
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {urls.map((url, index) => (
-                  <li key={index} className="px-4 py-4 sm:px-6">
+                  <li key={index} className="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-3">
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-blue-600 truncate">
+                            <p className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate">
                               {displayUrl}/{url.short_url}
                             </p>
-                            <p className="text-sm text-gray-500 truncate">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                               {url.full_url}
                             </p>
                           </div>
@@ -313,19 +338,23 @@ const Dashboard = () => {
                       </div>
                       <div className="flex items-center space-x-4">
                         <div className="text-right">
-                          <p className="text-sm font-medium text-gray-900 flex items-center">
-                            <span className="text-lg font-bold text-blue-600">{url.clicks || 0}</span>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center">
+                            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{url.clicks || 0}</span>
                             <span className="ml-1">clicks</span>
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             Total visits
                           </p>
                         </div>
                         <button
-                          onClick={() => navigator.clipboard.writeText(`${displayUrl}/${url.short_url}`)}
-                          className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+                          onClick={() => handleCopyUrl(url.short_url)}
+                          className={`px-3 py-1 rounded text-sm font-medium transition-all duration-300 ${
+                            copiedUrls.has(url.short_url)
+                              ? 'bg-green-600 dark:bg-green-700 text-white' 
+                              : 'bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700'
+                          }`}
                         >
-                          Copy
+                          {copiedUrls.has(url.short_url) ? 'Copied!' : 'Copy'}
                         </button>
                       </div>
                     </div>
@@ -334,6 +363,11 @@ const Dashboard = () => {
               </ul>
             )}
           </div>
+            </>
+          ) : (
+            /* Profile Tab Content */
+            <Profile />
+          )}
         </div>
       </main>
     </div>

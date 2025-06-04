@@ -45,3 +45,36 @@ export const updateUserVerification = async (userId, verificationToken = null, v
 export const getAllUserUrlsDao = async (id) => {
     return await shortUrlModel.find({user:id})
 }
+
+export const updateUserProfile = async (userId, name, email) => {
+    const updateData = {}
+    if (name) updateData.name = name
+    if (email) updateData.email = email
+    
+    return await User.findByIdAndUpdate(userId, updateData, { new: true })
+}
+
+export const updateUserPassword = async (userId, hashedPassword) => {
+    return await User.findByIdAndUpdate(userId, { password: hashedPassword }, { new: true })
+}
+
+export const updateUserPasswordResetToken = async (userId, resetToken, resetExpires) => {
+    return await User.findByIdAndUpdate(userId, { 
+        passwordResetToken: resetToken,
+        passwordResetExpires: resetExpires 
+    }, { new: true })
+}
+
+export const findUserByPasswordResetToken = async (token) => {
+    return await User.findOne({
+        passwordResetToken: token,
+        passwordResetExpires: { $gt: new Date() }
+    })
+}
+
+export const clearPasswordResetToken = async (userId) => {
+    return await User.findByIdAndUpdate(userId, {
+        passwordResetToken: null,
+        passwordResetExpires: null
+    }, { new: true })
+}

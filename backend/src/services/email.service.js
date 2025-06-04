@@ -132,22 +132,21 @@ export const sendVerificationEmail = async (email, name, verificationToken) => {
 export const sendWelcomeEmail = async (email, name) => {
   try {
     const transporter = createTransporter();
-
-    // If no email configuration, log to console
-    if (!transporter) {
-      console.log('=== WELCOME EMAIL DEBUG ===');
-      console.log(`Sending welcome email to: ${email} (${name})`);
-      console.log('==========================');
-      return {
-        success: true,
-        message: 'Welcome email logged to console (no SMTP config)'
-      };
-    }
     
+    // If no transporter, log to console
+    if (!transporter) {
+      console.log('=== WELCOME EMAIL (Console Mode) ===');
+      console.log(`To: ${email}`);
+      console.log(`Subject: Welcome to URL Shortener! 🎉`);
+      console.log(`Hi ${name}, your email has been verified successfully!`);
+      console.log('=====================================');
+      return { success: true, mode: 'console' };
+    }
+
     const mailOptions = {
-      from: process.env.FROM_EMAIL || 'noreply@urlshortener.com',
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
       to: email,
-      subject: 'Welcome to URL Shortener - Email Verified!',
+      subject: 'Welcome to URL Shortener! 🎉',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #10b981;">Email Verified Successfully!</h2>
@@ -190,5 +189,65 @@ export const sendWelcomeEmail = async (email, name) => {
       success: false,
       message: 'Welcome email failed but this is not critical'
     };
+  }
+}
+
+export const sendPasswordResetEmail = async (email, name, resetToken) => {
+  try {
+    const transporter = createTransporter();
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+    
+    // If no transporter, log to console
+    if (!transporter) {
+      console.log('=== PASSWORD RESET EMAIL (Console Mode) ===');
+      console.log(`To: ${email}`);
+      console.log(`Subject: Reset Your Password - URL Shortener`);
+      console.log(`Hi ${name}, reset URL: ${resetUrl}`);
+      console.log('===========================================');
+      return { success: true, mode: 'console' };
+    }
+
+    const mailOptions = {
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to: email,
+      subject: 'Reset Your Password - URL Shortener',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #dc2626;">Password Reset Request</h2>
+          <p>Hi ${name},</p>
+          <p>We received a request to reset your password for your URL Shortener account.</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" 
+               style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+              Reset Password
+            </a>
+          </div>
+          
+          <p><strong>This link will expire in 1 hour.</strong></p>
+          
+          <p>If you didn't request this password reset, please ignore this email. Your password will remain unchanged.</p>
+          
+          <p>For security reasons, you can also copy and paste this link in your browser:</p>
+          <p style="background-color: #f3f4f6; padding: 10px; border-radius: 4px; word-break: break-all; font-family: monospace; font-size: 12px;">
+            ${resetUrl}
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            URL Shortener Team<br>
+            This is an automated email, please do not reply.
+          </p>
+        </div>
+      `
+    };
+    
+    const result = await transporter.sendMail(mailOptions);
+    console.log('Password reset email sent:', result.messageId);
+    return result;
+    
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    throw error; // Password reset emails are critical, so throw the error
   }
 }
