@@ -43,6 +43,21 @@ app.use(async (req, res, next) => {
 });
 
 // Health check route
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    success: true,
+    message: 'URL Shortener API is running successfully',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      shortUrl: '/api',
+      user: '/api/user'
+    }
+  })
+})
+
 app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
