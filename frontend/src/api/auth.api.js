@@ -41,6 +41,13 @@ export const resendVerification = (email) => {
   })
 }
 
+// Resend verification email (alias for consistency)
+export const resendVerificationEmail = (email) => {
+  return axiosInstance.post('/api/auth/resend-verification', {
+    email
+  })
+}
+
 // Get user's URLs
 export const getUserUrls = () => {
   return axiosInstance.get('/api/user/urls')

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { registerUser } from '../api/auth.api'
 import { useAuth } from '../contexts/AuthContext'
-import EmailVerificationRequired from '../components/EmailVerificationRequired'
+import EmailVerificationComponent from '../components/EmailVerificationComponent'
 
 const Register = () => {
   const [name, setName] = useState('')
@@ -30,14 +30,9 @@ const Register = () => {
     try {
       const response = await registerUser(name, email, password)
       
-      // Check if the response indicates verification required
-      if (response.data?.message?.includes('verification') || response.data?.verificationRequired) {
-        setVerificationRequired(true)
-      } else {
-        // Legacy flow - direct login after registration
-        await checkAuthStatus()
-        navigate('/dashboard')
-      }
+      // Always show verification component for new registrations
+      // Modern registration flow requires email verification
+      setVerificationRequired(true)
     } catch (error) {
       setError(error.message || 'Registration failed')
     } finally {
@@ -48,7 +43,12 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {verificationRequired ? (
-        <EmailVerificationRequired email={email} />
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <EmailVerificationComponent 
+            email={email} 
+            onClose={() => setVerificationRequired(false)}
+          />
+        </div>
       ) : (
         <>
           <div className="sm:mx-auto sm:w-full sm:max-w-md">
