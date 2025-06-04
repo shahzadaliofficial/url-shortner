@@ -4,10 +4,22 @@ import mongoose from "mongoose";
 let cachedConnection = null;
 
 const connectDB = async () => {
-  // Return cached connection if available
+  // Return cached connection if available and connected
   if (cachedConnection && mongoose.connection.readyState === 1) {
     console.log('Using cached MongoDB connection');
     return cachedConnection;
+  }
+
+  // If connection exists but not ready, wait for it
+  if (mongoose.connection.readyState === 2) {
+    console.log('MongoDB connection is in connecting state, waiting...');
+    await new Promise((resolve) => {
+      mongoose.connection.on('connected', resolve);
+      setTimeout(resolve, 10000); // Timeout after 10 seconds
+    });
+    if (mongoose.connection.readyState === 1) {
+      return mongoose.connection;
+    }
   }
 
   try {

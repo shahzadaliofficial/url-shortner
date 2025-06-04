@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import connectDB  from './src/config/mongo.config.js'
 import { errorHandler } from './src/utils/errorHandler.js'
+import { ensureDbConnection } from './src/middleware/database.middleware.js'
 
 // Route imports
 import authRoutes from './src/routes/auth.route.js'
@@ -28,7 +29,7 @@ const corsOptions = {
       'http://localhost:5173',
       'http://localhost:3000',
       'https://url-shortner-shahzad.vercel.app',
-      'https://usner.vercel.app', // From the error logs
+      'https://url-shortner-backend-chi.vercel.app', // Updated backend URL
       // Add more Vercel URLs as needed
     ].filter(Boolean); // Remove undefined values
     
@@ -72,13 +73,13 @@ app.get('/health', (req, res) => {
   })
 })
 
-// API Routes
-app.use('/api/auth', authRoutes)
-app.use('/api', shortUrlRoutes)
-app.use('/api/user', userRoutes)
+// API Routes with database middleware
+app.use('/api/auth', ensureDbConnection, authRoutes)
+app.use('/api', ensureDbConnection, shortUrlRoutes)
+app.use('/api/user', ensureDbConnection, userRoutes)
 
 // Short URL redirect route (must be after API routes but before 404 handler)
-app.get('/:id', shortUrlRedirect)
+app.get('/:id', ensureDbConnection, shortUrlRedirect)
 
 // Error handling middleware
 app.use(errorHandler)

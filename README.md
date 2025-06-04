@@ -190,17 +190,78 @@ Comprehensive tracking of URL usage:
 
 ## 🚀 Deployment
 
-### Backend Deployment (Vercel)
-The backend includes Vercel configuration in `vercel.json`. Set up environment variables in Vercel dashboard.
+### Quick Deploy to Vercel
 
-### Frontend Deployment (Vercel/Netlify)
-The frontend is ready for deployment with production builds.
+1. **Login to Vercel CLI**:
+   ```bash
+   npx vercel login
+   ```
 
-### Environment Variables for Production
-Update the following for production:
-- `NODE_ENV=production`
-- `FRONTEND_URL=https://your-frontend-domain.com`
-- `APP_URI=https://your-backend-domain.com/`
+2. **Run the deployment script**:
+   ```bash
+   ./deploy.sh
+   ```
+
+### Manual Deployment
+
+#### Backend Deployment
+
+1. Navigate to backend directory:
+   ```bash
+   cd backend
+   ```
+
+2. Deploy to Vercel:
+   ```bash
+   npx vercel --prod
+   ```
+
+3. Set environment variables in Vercel dashboard or via CLI:
+   ```bash
+   vercel env add MONGO_URI
+   vercel env add JWT_SECRET
+   vercel env add FRONTEND_URL
+   vercel env add ABSTRACT_API_KEY
+   # ... add other environment variables
+   ```
+
+#### Frontend Deployment
+
+1. Navigate to frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Update `VITE_API_URL` in `.env.production` with your backend URL
+
+3. Deploy to Vercel:
+   ```bash
+   npx vercel --prod
+   ```
+
+### Environment Variables Setup
+
+Create production environment files:
+
+**Backend** (`.env.production`):
+```env
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+FRONTEND_URL=https://your-frontend-domain.vercel.app
+ABSTRACT_API_KEY=your_abstract_api_key
+# ... other variables
+```
+
+**Frontend** (`.env.production`):
+```env
+VITE_API_URL=https://your-backend-domain.vercel.app
+```
+
+### Troubleshooting Deployment
+
+- **Database Connection Issues**: Ensure MongoDB Atlas allows connections from all IPs (0.0.0.0/0) for serverless functions
+- **CORS Errors**: Update backend CORS configuration with your frontend domain
+- **Environment Variables**: Verify all required environment variables are set in Vercel dashboard
 
 ## 🤝 Contributing
 
