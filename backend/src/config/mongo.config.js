@@ -19,16 +19,21 @@ const connectDB = async () => {
       throw new Error('MONGO_URI environment variable is not defined');
     }
 
-    // Serverless optimized configuration
+    // Serverless optimized configuration with increased timeouts
     const connectionOptions = {
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 30000, // Increased from 5000
+      connectTimeoutMS: 30000,          // Increased from 10000
       socketTimeoutMS: 45000,
       bufferCommands: false,
       maxPoolSize: 5,
       minPoolSize: 0,
       maxIdleTimeMS: 30000,
+      retryWrites: true,
+      retryReads: true,
+      readPreference: 'primaryPreferred', // Allow reading from secondaries if primary is down
     };
+    
+    console.log('Connecting with options:', JSON.stringify(connectionOptions, null, 2));
     
     const conn = await mongoose.connect(process.env.MONGO_URI, connectionOptions);
     
@@ -54,6 +59,17 @@ const connectDB = async () => {
      
   } catch(error) {
     console.error(`MongoDB Connection Error: ${error.message}`);
+    
+    // Reset cached connection on error
+    cachedConnection = null;
+    
+    // Don't throw error in development to allow server to start
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️  MongoDB connection failed in development mode. Server will start but database operations will fail.');
+      console.warn('⚠️  This is likely a temporary Atlas connectivity issue. Try restarting the server.');
+      return null;
+    }
+    
     throw error;
   }
 }

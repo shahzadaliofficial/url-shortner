@@ -29,12 +29,15 @@ export const shortUrlRedirect = tryCatchWrapAsync(async (req, res) => {
   
   // Validate the ID format
   if (!id || id.length < 3) {
-    throw new NotFoundError("Invalid Short URL");
+    // Redirect to frontend 404 page for invalid URLs
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return res.redirect(`${frontendUrl}/404`);
   }
   
   // Skip favicon and common static files
   if (id.includes('favicon') || id.includes('.')) {
-    throw new NotFoundError("Invalid Short URL");
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return res.redirect(`${frontendUrl}/404`);
   }
   
   console.log('Redirecting ID:', id);
@@ -46,11 +49,15 @@ export const shortUrlRedirect = tryCatchWrapAsync(async (req, res) => {
       console.log('Redirecting to:', url.full_url);
       res.redirect(url.full_url);
     } else {
-      throw new NotFoundError("Invalid Short URL");
+      // Redirect to frontend 404 page for non-existent URLs
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(`${frontendUrl}/404`);
     }
   } catch (error) {
     console.error('Redirect error:', error);
-    throw new NotFoundError("Invalid Short URL");
+    // Redirect to frontend 404 page for any errors
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}/404`);
   }
 }) 
 export const customShortUrlCreate=tryCatchWrapAsync(async(req, res)=>{
