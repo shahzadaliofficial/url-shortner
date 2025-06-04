@@ -3,17 +3,22 @@ import { createUser,findUserByEmail, updateUserVerification } from '../dao/user.
 import { ConflictError, NotFoundError, UnauthorizedError } from '../utils/errorHandler.js';
 import { signJwtToken } from '../utils/helper.utils.js';
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail } from './email.service.js';
+import bcrypt from 'bcrypt';
 
 
 export const registerUserService = async (name, email, password)=>{
     const user = await findUserByEmail(email)
     if (user) throw new ConflictError("User Already Exist");
     
+    // Hash password before storing
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    
     // Generate verification token
     const verificationToken = generateVerificationToken()
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
     
-    const newUser = await createUser(name, email, password, verificationToken, verificationExpires)
+    const newUser = await createUser(name, email, hashedPassword, verificationToken, verificationExpires)
     
     // Send verification email
     await sendVerificationEmail(email, name, verificationToken)
@@ -33,7 +38,13 @@ export const registerUserService = async (name, email, password)=>{
 export const loginUserService = async (email, password)=>{
     const user = await findUserByEmail(email)
     
-    if (!user || user.password!=password) {
+    if (!user) {
+        throw new NotFoundError("Email or password is invalid");
+    }
+    
+    // Compare password with hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
         throw new NotFoundError("Email or password is invalid");
     }
     
