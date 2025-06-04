@@ -22,9 +22,15 @@ export const userRegister = tryCatchWrapAsync(async (req,res)=>{
 
 export const userLogin =  tryCatchWrapAsync(async (req,res)=>{
     const { email, password}=req.body  
-    const token= await loginUserService(email.toLowerCase(), password)
-    res.cookie("accessToken", token, cookieOptions)
-    res.status(200).json({message: "Login Success"})
+    const result = await loginUserService(email.toLowerCase(), password)
+    res.cookie("accessToken", result.token, cookieOptions)
+    
+    const response = {
+        message: "Login Success",
+        user: result.user
+    };
+    
+    res.status(200).json(response);
 })
 
 export const verifyEmail = tryCatchWrapAsync(async (req, res) => {

@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createShortUrl } from '../api/shortUrl.api'
+import { createShortUrl, createCustomShortUrl } from '../api/shortUrl.api'
 import { useAuth } from '../contexts/AuthContext'
 
 const UrlShortnerForm = () => {
@@ -28,7 +28,12 @@ const UrlShortnerForm = () => {
     }
 
     try {
-      const response = await createShortUrl(fullUrl, customId)
+      let response
+      if (customId.trim()) {
+        response = await createCustomShortUrl(fullUrl, customId)
+      } else {
+        response = await createShortUrl(fullUrl)
+      }
       setShortUrl(response.data.url)
     } catch (error) {
       if (error.status === 401) {
@@ -130,9 +135,16 @@ const UrlShortnerForm = () => {
 
         {!isAuthenticated && (
           <div className='mt-4 p-4 bg-blue-50 border border-blue-200 rounded'>
-            <p className='text-blue-800 text-sm text-center'>
+            <p className='text-blue-800 text-sm text-center mb-3'>
               <span className='font-medium'>Want more features?</span> Login to create custom URLs and track statistics!
             </p>
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className='w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 transition-colors'
+            >
+              Login Now
+            </button>
           </div>
         )}
       </form>

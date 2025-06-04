@@ -22,7 +22,15 @@ const Login = () => {
 
     try {
       const response = await loginUser(email, password)
-      await checkAuthStatus() // Refresh user data
+      
+      // If the response contains user data, use it to update auth state
+      if (response.data?.user) {
+        login(response.data.user)
+      } else {
+        // Fallback: refresh auth status from server
+        await checkAuthStatus()
+      }
+      
       navigate('/dashboard')
     } catch (error) {
       const errorMessage = error.message || 'Login failed'

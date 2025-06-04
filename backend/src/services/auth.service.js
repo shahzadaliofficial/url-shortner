@@ -32,14 +32,26 @@ export const registerUserService = async (name, email, password)=>{
 
 export const loginUserService = async (email, password)=>{
     const user = await findUserByEmail(email)
-    if (!user || user.password!=password) throw new NotFoundError("Email or password is invalid");
+    
+    if (!user || user.password!=password) {
+        throw new NotFoundError("Email or password is invalid");
+    }
     
     if (!user.isEmailVerified) {
         throw new UnauthorizedError("Please verify your email address before logging in");
     }
     
     const token=signJwtToken({id: user._id})
-    return token
+    
+    return {
+        token,
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            isEmailVerified: user.isEmailVerified
+        }
+    }
 }
 
 export const verifyEmailService = async (token) => {
