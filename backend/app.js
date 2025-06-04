@@ -2,7 +2,6 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
-import net from 'net'
 import connectDB  from './src/config/mongo.config.js'
 import { errorHandler } from './src/utils/errorHandler.js'
 
@@ -17,29 +16,6 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 3000
 
-// Function to check if port is available
-const isPortAvailable = (port) => {
-  return new Promise((resolve) => {
-    const server = net.createServer();
-    server.listen(port, () => {
-      server.close(() => resolve(true));
-    });
-    server.on('error', () => resolve(false));
-  });
-};
-
-// Function to find an available port
-const findAvailablePort = async (startPort) => {
-  let port = startPort;
-  while (port < startPort + 10) {
-    if (await isPortAvailable(port)) {
-      return port;
-    }
-    port++;
-  }
-  throw new Error(`No available ports found between ${startPort} and ${startPort + 9}`);
-};
-
 // CORS configuration
 const corsOptions = {
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
@@ -52,6 +28,19 @@ app.use(cors(corsOptions))
 app.use(express.json({ limit: '16kb' }))
 app.use(express.urlencoded({ extended: true, limit: '16kb' }))
 app.use(cookieParser())
+
+// Connect to MongoDB once
+connectDB()
+
+// Root route
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    success: true,
+    message: 'URL Shortener API is running successfully',
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  })
+})
 
 // Health check route
 app.get('/health', (req, res) => {
@@ -78,38 +67,16 @@ app.use('*', (req, res) => {
   })
 })
 
-// Connect to MongoDB
-const startServer = async () => {
-  try {
-    await connectDB();
-    
-    // Find an available port
-    const availablePort = await findAvailablePort(PORT);
-    if (availablePort !== PORT) {
-      console.log(`⚠️  Port ${PORT} is busy, using port ${availablePort} instead`);
-    }
-    
-    // Start server only after successful DB connection
-    const server = app.listen(availablePort, () => {
-      console.log(`🚀 Server is running on port ${availablePort}`)
-      console.log(`📱 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`)
-      console.log(`🌐 API Health: http://localhost:${availablePort}/health`)
-    });
-    
-    // Handle server errors
-    server.on('error', (err) => {
-      console.error('Server error:', err);
-      process.exit(1);
-    });
-    
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-};
+// Only start server if not in serverless environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server is running on port ${PORT}`)
+    console.log(`📱 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`)
+    console.log(`🌐 API Health: http://localhost:${PORT}/health`)
+  })
+}
 
-// Start the application
-startServer();
+export default app
 
 // Error handling middleware
 app.use(errorHandler)
