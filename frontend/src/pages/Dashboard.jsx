@@ -323,22 +323,54 @@ const Dashboard = () => {
               <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {urls.map((url, index) => (
                   <li key={index} className="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate">
-                              {displayUrl}/{url.short_url}
-                            </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                              {url.full_url}
-                            </p>
-                          </div>
+                    {/* Mobile Layout - Stack vertically */}
+                    <div className="block sm:hidden space-y-3">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-blue-600 dark:text-blue-400 break-all">
+                          {displayUrl}/{url.short_url}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 break-all">
+                          {url.full_url}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-left">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center">
+                            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{url.clicks || 0}</span>
+                            <span className="ml-1">clicks</span>
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Total visits
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleCopyUrl(url.short_url)}
+                          className={`px-3 py-1 rounded text-sm font-medium transition-all duration-300 ${
+                            copiedUrls.has(url.short_url)
+                              ? 'bg-green-600 dark:bg-green-700 text-white' 
+                              : 'bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700'
+                          }`}
+                        >
+                          {copiedUrls.has(url.short_url) ? 'Copied!' : 'Copy'}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Desktop Layout - Keep original side-by-side */}
+                    <div className="hidden sm:flex items-center justify-between">
+                      <div className="flex-1 min-w-0 pr-4">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate">
+                            {displayUrl}/{url.short_url}
+                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                            {url.full_url}
+                          </p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-4 flex-shrink-0">
                         <div className="text-right">
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center justify-end">
                             <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{url.clicks || 0}</span>
                             <span className="ml-1">clicks</span>
                           </p>

@@ -31,6 +31,8 @@ const corsOptions = {
       'https://url-shortner-shahzad.vercel.app',
       'https://urner.vercel.app',
       'https://url-shortner-backend-fiibythe5-shahzadaliofficials-projects.vercel.app',
+      'url-shortner-react-4a0etqxxi-shahzadaliofficials-projects.vercel.app',
+      'https://url-shortner-react-git-main-shahzadaliofficials-projects.vercel.app/'
       // Add more Vercel URLs as needed
     ].filter(Boolean); // Remove undefined values
     
