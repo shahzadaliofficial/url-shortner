@@ -5,6 +5,7 @@ const FormInput = ({
   type, 
   value, 
   onChange, 
+  onBlur,
   validation, 
   placeholder, 
   required = false,
@@ -15,8 +16,11 @@ const FormInput = ({
   const [isTouched, setIsTouched] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
-  const handleBlur = () => {
+  const handleBlur = (e) => {
     setIsTouched(true)
+    if (onBlur) {
+      onBlur(e)
+    }
   }
 
   const handleChange = (e) => {

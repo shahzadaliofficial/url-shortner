@@ -46,40 +46,13 @@ const Register = () => {
       return
     }
 
-    // Start with basic format validation
+    // Only do basic format validation during typing
     const basicValidation = validateEmail(email)
     setEmailValidation(basicValidation)
     
-    // Check email deliverability for valid emails
-    if (basicValidation.isValid) {
-      setCheckingEmail(true)
-      const checkDeliverability = async () => {
-        try {
-          const deliverabilityResult = await validateEmailDeliverabilityAsync(email)
-          
-          // Update validation with deliverability results
-          setEmailValidation({
-            isValid: deliverabilityResult.isValid,
-            errors: deliverabilityResult.errors,
-            isDeliverable: deliverabilityResult.isDeliverable
-          })
-          setEmailDeliverable(deliverabilityResult.isDeliverable)
-          
-        } catch (error) {
-          console.warn('Email deliverability check failed:', error)
-          // Keep basic validation, but show warning
-          setEmailDeliverable(null) // Unknown
-        } finally {
-          setCheckingEmail(false)
-        }
-      }
-      
-      const timeoutId = setTimeout(checkDeliverability, 800) // Debounce for 800ms - more responsive
-      return () => clearTimeout(timeoutId)
-    } else {
-      setEmailDeliverable(true)
-      setCheckingEmail(false)
-    }
+    // Reset deliverability state when email changes
+    setEmailDeliverable(true)
+    setCheckingEmail(false)
   }, [email])
 
   useEffect(() => {
@@ -97,6 +70,33 @@ const Register = () => {
                       confirmPasswordValidation.isValid &&
                       name && email && password && confirmPassword
 
+  // Handle email blur - check deliverability when user moves to password field
+  const handleEmailBlur = async () => {
+    if (!email || !emailValidation.isValid) {
+      return
+    }
+
+    setCheckingEmail(true)
+    try {
+      const deliverabilityResult = await validateEmailDeliverabilityAsync(email)
+      
+      // Update validation with deliverability results
+      setEmailValidation({
+        isValid: deliverabilityResult.isValid,
+        errors: deliverabilityResult.errors,
+        isDeliverable: deliverabilityResult.isDeliverable
+      })
+      setEmailDeliverable(deliverabilityResult.isDeliverable)
+      
+    } catch (error) {
+      console.warn('Email deliverability check failed:', error)
+      // Keep basic validation, but show warning
+      setEmailDeliverable(null) // Unknown
+    } finally {
+      setCheckingEmail(false)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -107,6 +107,32 @@ const Register = () => {
       setError('Please fix all validation errors before submitting')
       setLoading(false)
       return
+    }
+
+    // Final email deliverability check if not already done
+    if (emailValidation.isValid && emailDeliverable === true && !emailValidation.isDeliverable) {
+      setCheckingEmail(true)
+      try {
+        const deliverabilityResult = await validateEmailDeliverabilityAsync(email)
+        
+        if (!deliverabilityResult.isValid) {
+          setEmailValidation({
+            isValid: false,
+            errors: deliverabilityResult.errors,
+            isDeliverable: false
+          })
+          setEmailDeliverable(false)
+          setError('Please use a valid email address that can receive emails.')
+          setLoading(false)
+          setCheckingEmail(false)
+          return
+        }
+      } catch (error) {
+        console.warn('Final email validation failed:', error)
+        // Continue with registration if API fails
+      } finally {
+        setCheckingEmail(false)
+      }
     }
 
     try {
@@ -170,6 +196,7 @@ const Register = () => {
                     type="email"
                     value={email}
                     onChange={setEmail}
+                    onBlur={handleEmailBlur} // Check deliverability on blur
                     validation={emailValidation}
                     placeholder="Enter your email address"
                     autoComplete="email"

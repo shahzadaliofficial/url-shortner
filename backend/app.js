@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import connectDB  from './src/config/mongo.config.js'
 import { errorHandler } from './src/utils/errorHandler.js'
-import { ensureDbConnection } from './src/middleware/database.middleware.js'
+import { ensureDbConnection } from './src/middleware/database-simple.middleware.js'
 
 // Route imports
 import authRoutes from './src/routes/auth.route.js'
@@ -29,7 +29,7 @@ const corsOptions = {
       'http://localhost:5173',
       'http://localhost:3000',
       'https://url-shortner-shahzad.vercel.app',
-      'https://url-shortner-backend-chi.vercel.app', // Updated backend URL
+      'https://urner.vercel.app', // Updated backend URL
       // Add more Vercel URLs as needed
     ].filter(Boolean); // Remove undefined values
     
@@ -54,8 +54,9 @@ app.use(express.json({ limit: '16kb' }))
 app.use(express.urlencoded({ extended: true, limit: '16kb' }))
 app.use(cookieParser())
 
-// Connect to MongoDB once
-connectDB()
+// Connect to MongoDB in all environments
+connectDB().catch(console.error);
+
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Root route

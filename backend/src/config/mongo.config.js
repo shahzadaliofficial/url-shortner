@@ -2,8 +2,20 @@ import mongoose from "mongoose";
 
 // Global connection variable for serverless
 let cachedConnection = null;
+let isConnecting = false;
 
 const connectDB = async () => {
+  // If already connecting, wait for it
+  if (isConnecting) {
+    console.log('Connection attempt already in progress, waiting...');
+    while (isConnecting) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    if (mongoose.connection.readyState === 1) {
+      return mongoose.connection;
+    }
+  }
+
   // Return cached connection if available and connected
   if (cachedConnection && mongoose.connection.readyState === 1) {
     console.log('Using cached MongoDB connection');
@@ -14,13 +26,25 @@ const connectDB = async () => {
   if (mongoose.connection.readyState === 2) {
     console.log('MongoDB connection is in connecting state, waiting...');
     await new Promise((resolve) => {
-      mongoose.connection.on('connected', resolve);
-      setTimeout(resolve, 10000); // Timeout after 10 seconds
+      const checkConnection = () => {
+        if (mongoose.connection.readyState === 1) {
+          resolve();
+        } else if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 3) {
+          resolve(); // Let it try to reconnect
+        } else {
+          setTimeout(checkConnection, 100);
+        }
+      };
+      checkConnection();
+      setTimeout(resolve, 15000); // Timeout after 15 seconds
     });
+    
     if (mongoose.connection.readyState === 1) {
       return mongoose.connection;
     }
   }
+
+  isConnecting = true;
 
   try {
     console.log('Attempting to connect to MongoDB...');
@@ -36,7 +60,7 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 30000, // Increased from 5000
       connectTimeoutMS: 30000,          // Increased from 10000
       socketTimeoutMS: 45000,
-      bufferCommands: false,
+      bufferCommands: false,            // Important for serverless
       maxPoolSize: 5,
       minPoolSize: 0,
       maxIdleTimeMS: 30000,
@@ -47,6 +71,11 @@ const connectDB = async () => {
     
     console.log('Connecting with options:', JSON.stringify(connectionOptions, null, 2));
     
+    // Clear any existing connection state
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
+    
     const conn = await mongoose.connect(process.env.MONGO_URI, connectionOptions);
     
     console.log(`MongoDB Connected: ${conn.connection.host}`);
@@ -55,16 +84,24 @@ const connectDB = async () => {
     
     // Cache the connection
     cachedConnection = conn;
+    isConnecting = false;
     
     // Handle connection events
     mongoose.connection.on('error', (err) => {
       console.error('MongoDB connection error:', err);
       cachedConnection = null;
+      isConnecting = false;
     });
     
     mongoose.connection.on('disconnected', () => {
       console.warn('MongoDB disconnected');
       cachedConnection = null;
+      isConnecting = false;
+    });
+    
+    mongoose.connection.on('reconnected', () => {
+      console.log('MongoDB reconnected');
+      cachedConnection = mongoose.connection;
     });
     
     return conn;
@@ -74,6 +111,7 @@ const connectDB = async () => {
     
     // Reset cached connection on error
     cachedConnection = null;
+    isConnecting = false;
     
     // Don't throw error in development to allow server to start
     if (process.env.NODE_ENV === 'development') {
